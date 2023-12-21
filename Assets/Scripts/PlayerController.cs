@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     public float climbSpeed;
     public float vaultSpeed;
     public float airMinSpeed;
+    public float WaterHeight = 15.5f;
 
     public float speedIncreaseMultiplier;
     public float slopeIncreaseMultiplier;
@@ -89,6 +90,7 @@ public class PlayerController : MonoBehaviour
 
     public bool restricted;
 
+    public TextMeshProUGUI text_heath;
     public TextMeshProUGUI text_speed;
     public TextMeshProUGUI text_mode;
 
@@ -117,6 +119,17 @@ public class PlayerController : MonoBehaviour
             rb.drag = groundDrag;
         else
             rb.drag = 0;
+
+        text_heath.SetText("Health: " + health);
+
+        GunController gunController = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<GunController>();
+        if (transform.position.y < WaterHeight)
+        {
+            transform.position = new Vector3(transform.position.x, WaterHeight, transform.position.z);
+            gunController.currentGun.gun.SetActive(false);
+        }
+        else if (!gunController.currentGun.gun.activeSelf)
+            gunController.currentGun.gun.SetActive(true);
     }
 
     private void FixedUpdate()

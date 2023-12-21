@@ -11,6 +11,8 @@ public class EnemyAi : MonoBehaviour
 
     public LayerMask whatIsGround, whatIsPlayer;
 
+    public MainGameController gameController;
+
     public float health;
     public int attackDamage;
 
@@ -29,6 +31,7 @@ public class EnemyAi : MonoBehaviour
 
     private void Awake()
     {
+        gameController = GameObject.Find("MainGameController").GetComponent<MainGameController>();
         player = GameObject.Find("PlayerObj").transform;
         agent = GetComponent<NavMeshAgent>();
     }
@@ -91,14 +94,15 @@ public class EnemyAi : MonoBehaviour
     }
 
     public void TakeDamage(int damage)
-    {
-        ChasePlayer();
+    { 
         health -= damage;
 
         if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+        else ChasePlayer();
     }
     private void DestroyEnemy()
     {
+        gameController.CountEnemy(1);
         Destroy(gameObject);
     }
 
