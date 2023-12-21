@@ -1,0 +1,4 @@
+repository "Trabalho2@leirbagtoledo@cloud"
+  path "/"
+    br "/main"
+    co "/main"
