@@ -97,7 +97,10 @@ public class EnemyAi : MonoBehaviour
     { 
         health -= damage;
 
-        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+        if (health <= 0) { 
+            agent.SetDestination(transform.position);
+            Invoke(nameof(DestroyEnemy), 0.5f); 
+        }
         else ChasePlayer();
     }
     private void DestroyEnemy()
