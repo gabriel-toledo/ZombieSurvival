@@ -231,14 +231,15 @@ MonoBehaviour:
   player: {fileID: 0}
   whatIsGround:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 9
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 512
+  gameController: {fileID: 0}
   health: 120
   attackDamage: 20
   walkPoint: {x: 0, y: 0, z: 0}
-  walkPointRange: 5
+  walkPointRange: 10
   timeBetweenAttacks: 1
-  sightRange: 20
+  sightRange: 40
   playerInSightRange: 0

@@ -6,31 +6,31 @@ using Unity.VisualScripting;
 
 public class GunController : MonoBehaviour
 {
-    //AssaultRifle stats
+    [Header("Assault")]
     public int assaultDamage;
-    public float assaultTimeBetweenShooting, assaultSpread, assaultRange, assaultReloadTime, assaultTimeBetweenShots;
+    public float assaultTimeBetweenShooting, assaultSpread, assaultAimSpread, assaultMovingSpread, assaultRange, assaultReloadTime, assaultTimeBetweenShots;
     public int assaultMagazineSize, assaultBulletsPerTap;
     public bool assaultAllowButtonHold;
 
-    //Sniper stats
+    [Header("Sniper")]
     public int sniperDamage;
-    public float sniperTimeBetweenShooting, sniperSpread, sniperRange, sniperReloadTime, sniperTimeBetweenShots;
+    public float sniperTimeBetweenShooting, sniperSpread, sniperAimSpread, sniperMovingSpread, sniperRange, sniperReloadTime, sniperTimeBetweenShots;
     public int sniperMagazineSize;
 
-    //Pistol stats
+    [Header("Pistol")]
     public int pistolDamage;
-    public float pistolTimeBetweenShooting, pistolSpread, pistolRange, pistolReloadTime, pistolTimeBetweenShots;
+    public float pistolTimeBetweenShooting, pistolSpread, pistolAimSpread, pistolMovingSpread, pistolRange, pistolReloadTime, pistolTimeBetweenShots;
     public int pistolMagazineSize;
 
-    //Shotgun stats
+    [Header("Shotgun")]
     public int shotgunDamage;
-    public float shotgunTimeBetweenShooting, shotgunSpread, shotgunRange, shotgunReloadTime, shotgunTimeBetweenShots;
+    public float shotgunTimeBetweenShooting, shotgunSpread, shotgunAimSpread, shotgunMovingSpread, shotgunRange, shotgunReloadTime, shotgunTimeBetweenShots;
     public int shotgunMagazineSize, shotgunBulletsPerTap;
 
     //bools 
-    bool shooting, reloading;
+    bool shooting, reloading, aiming, moving;
 
-    //Reference
+    [Header("Reference")]
     public Camera fpsCam;
     public RaycastHit rayHit;
     public LayerMask whatIsEnemy; 
@@ -41,11 +41,11 @@ public class GunController : MonoBehaviour
     public GameObject pistolPrefab;
     public GameObject shotgunPrefab;
 
-    //Graphics
+    [Header("Graphics")]
     public GameObject enviromentBulletHoleGraphic, enemyBulletHoleGraphic;
     public CameraShake camShake;
     public float camShakeMagnitude, camShakeDuration;
-    public TextMeshProUGUI text;
+    public TextMeshProUGUI ammunition;
 
     private Gun assaultRifle;
     private Gun sniper;
@@ -66,7 +66,7 @@ public class GunController : MonoBehaviour
         public GunTypes type;
         public bool readyToShoot;
         public int damage;
-        public float timeBetweenShooting, spread, range, timeBetweenShots, reloadTime;
+        public float timeBetweenShooting, spread, aimSpread, movingSpread, range, timeBetweenShots, reloadTime;
         public int magazineSize, bulletsPerTap;
         public bool allowButtonHold;
         public int bulletsLeft, bulletsShot;
@@ -74,7 +74,7 @@ public class GunController : MonoBehaviour
         public Transform attackPoint;
         public ParticleSystem muzzleFlash, cartridgeEjec;
 
-        public Gun(GunTypes type, GameObject gunPrefab, int damage, int magazineSize, int bulletsPerTap, float timeBetweenShooting, float spread, float range, float reloadTime, float timeBetweenShots, bool allowButtonHold, Transform gunTransform)
+        public Gun(GunTypes type, GameObject gunPrefab, int damage, int magazineSize, int bulletsPerTap, float timeBetweenShooting, float spread, float aimSpread, float movingSpread, float range, float reloadTime, float timeBetweenShots, bool allowButtonHold, Transform gunTransform)
         {
             this.type = type;
             this.damage = damage;
@@ -82,6 +82,8 @@ public class GunController : MonoBehaviour
             this.bulletsPerTap = bulletsPerTap;
             this.timeBetweenShooting = timeBetweenShooting;
             this.spread = spread;
+            this.aimSpread = aimSpread;
+            this.movingSpread = movingSpread;
             this.range = range;
             this.reloadTime = reloadTime;
             this.timeBetweenShots = timeBetweenShots;
@@ -94,16 +96,15 @@ public class GunController : MonoBehaviour
             this.attackPoint = this.gun.transform.GetChild(0).transform;
             this.muzzleFlash = this.gun.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystem>();
             this.cartridgeEjec = this.gun.transform.GetChild(1).GetChild(0).transform.GetComponent<ParticleSystem>();
-            Debug.Log(muzzleFlash, cartridgeEjec);
         }
     }
 
     private void Awake()
     {
-        assaultRifle = new Gun(GunTypes.assault, assaultPrefab, assaultDamage, assaultMagazineSize, assaultBulletsPerTap, assaultTimeBetweenShooting, assaultSpread, assaultRange, assaultReloadTime, assaultTimeBetweenShots, assaultAllowButtonHold, transform);
-        sniper = new Gun(GunTypes.sniper, sniperPrefab, sniperDamage, sniperMagazineSize, 1, sniperTimeBetweenShooting, sniperSpread, sniperRange, sniperReloadTime, sniperTimeBetweenShots, false, transform);
-        pistol = new Gun(GunTypes.pistol, pistolPrefab, pistolDamage, pistolMagazineSize, 1, pistolTimeBetweenShooting, pistolSpread, pistolRange, pistolReloadTime, pistolTimeBetweenShots, false, transform);
-        shotgun = new Gun(GunTypes.shotgun, shotgunPrefab, shotgunDamage, shotgunMagazineSize, shotgunBulletsPerTap, shotgunTimeBetweenShooting, shotgunSpread, shotgunRange, shotgunReloadTime, shotgunTimeBetweenShots, false, transform);
+        assaultRifle = new Gun(GunTypes.assault, assaultPrefab, assaultDamage, assaultMagazineSize, assaultBulletsPerTap, assaultTimeBetweenShooting, assaultSpread, assaultAimSpread, assaultMovingSpread, assaultRange, assaultReloadTime, assaultTimeBetweenShots, assaultAllowButtonHold, transform);
+        sniper = new Gun(GunTypes.sniper, sniperPrefab, sniperDamage, sniperMagazineSize, 1, sniperTimeBetweenShooting, sniperSpread, sniperAimSpread, sniperMovingSpread, sniperRange, sniperReloadTime, sniperTimeBetweenShots, false, transform);
+        pistol = new Gun(GunTypes.pistol, pistolPrefab, pistolDamage, pistolMagazineSize, 1, pistolTimeBetweenShooting, pistolSpread, pistolAimSpread, pistolMovingSpread, pistolRange, pistolReloadTime, pistolTimeBetweenShots, false, transform);
+        shotgun = new Gun(GunTypes.shotgun, shotgunPrefab, shotgunDamage, shotgunMagazineSize, shotgunBulletsPerTap, shotgunTimeBetweenShooting, shotgunSpread, shotgunAimSpread, shotgunMovingSpread, shotgunRange, shotgunReloadTime, shotgunTimeBetweenShots, false, transform);
 
         currentGun = assaultRifle;
         currentGun.readyToShoot = true;
@@ -114,8 +115,8 @@ public class GunController : MonoBehaviour
     {
         MyInput();
 
-        //SetText
-        text.SetText(currentGun.bulletsLeft / currentGun.bulletsPerTap + " / " + currentGun.magazineSize / currentGun.bulletsPerTap);
+        //Set Ammunition
+        ammunition.SetText(currentGun.bulletsLeft / currentGun.bulletsPerTap + " / " + currentGun.magazineSize / currentGun.bulletsPerTap);
     }
 
     private void MyInput()
@@ -137,6 +138,10 @@ public class GunController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchGun(sniper);
         if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchGun(shotgun);
         if (Input.GetKeyDown(KeyCode.Alpha4)) SwitchGun(pistol);
+
+        //Aim
+        if (Input.GetMouseButtonDown(1)) Aim();
+        if (Input.GetMouseButtonUp(1)) StopAim();
     }
 
     private void SwitchGun(Gun gun)
@@ -147,6 +152,7 @@ public class GunController : MonoBehaviour
             shooting = false;
             currentGun.readyToShoot = false;
             currentGun.gun.SetActive(false);
+            if(aiming) StopAim();
             switch (currentGun.type) 
             {
                 case GunTypes.assault: assaultRifle = currentGun; break;
@@ -161,13 +167,37 @@ public class GunController : MonoBehaviour
         }
     }
 
+    private void Aim()
+    {
+        aiming = true;
+        transform.GetComponentInChildren<Animator>().Play("Aim");
+
+    }
+
+    private void StopAim()
+    {
+        aiming = false;
+        transform.GetComponentInChildren<Animator>().Play("New State");
+    }
+    
     private void Shoot()
     {
         currentGun.readyToShoot = false;
 
         //Spread
-        float x = Random.Range(-currentGun.spread, currentGun.spread);
-        float y = Random.Range(-currentGun.spread, currentGun.spread);
+        float x = 0; 
+        float y = 0;
+        float spreadMoving = 0;
+        if (moving) spreadMoving = currentGun.movingSpread;
+        if (aiming)
+        {
+            x = Random.Range(-currentGun.aimSpread - spreadMoving, currentGun.aimSpread + spreadMoving);
+            y = Random.Range(-currentGun.aimSpread - spreadMoving, currentGun.aimSpread + spreadMoving);
+        } else
+        {
+            x = Random.Range(-currentGun.spread, currentGun.spread);
+            y = Random.Range(-currentGun.spread, currentGun.spread);
+        }
 
         //Calculate Direction with Spread
         Vector3 direction = fpsCam.transform.forward + new Vector3(x, y, 0);
@@ -216,5 +246,9 @@ public class GunController : MonoBehaviour
     {
         currentGun.bulletsLeft = currentGun.magazineSize;
         reloading = false;
+    }
+    public void SetMoving(bool moving)
+    {
+        this.moving = moving;
     }
 }

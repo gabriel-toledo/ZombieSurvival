@@ -56,6 +56,8 @@ public class PlayerController : MonoBehaviour
     public float health;
 
     public Transform orientation;
+    public Transform playerObj;
+    public GunController gunController;
 
     float horizontalInput;
     float verticalInput;
@@ -101,7 +103,7 @@ public class PlayerController : MonoBehaviour
 
         readyToJump = true;
 
-        startYScale = transform.localScale.y;
+        startYScale = playerObj.localScale.y;
     }
 
     private void Update()
@@ -122,7 +124,6 @@ public class PlayerController : MonoBehaviour
 
         text_heath.SetText("Health: " + health);
 
-        GunController gunController = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<GunController>();
         if (transform.position.y < WaterHeight)
         {
             transform.position = new Vector3(transform.position.x, WaterHeight, transform.position.z);
@@ -155,8 +156,9 @@ public class PlayerController : MonoBehaviour
         // start crouch
         if (Input.GetKeyDown(crouchKey) && horizontalInput == 0 && verticalInput == 0)
         {
-            transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
+            playerObj.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+            playerObj.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
 
             crouching = true;
         }
@@ -164,7 +166,8 @@ public class PlayerController : MonoBehaviour
         // stop crouch
         if (Input.GetKeyUp(crouchKey))
         {
-            transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
+            playerObj.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
+            playerObj.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
 
             crouching = false;
         }
@@ -310,6 +313,10 @@ public class PlayerController : MonoBehaviour
 
         // calculate movement direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if (moveDirection != new Vector3(0,0,0))
+            gunController.SetMoving(true);
+        else
+            gunController.SetMoving(false);
 
         // on slope
         if (OnSlope() && !exitingSlope)

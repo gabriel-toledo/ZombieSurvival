@@ -49,6 +49,8 @@ MonoBehaviour:
   assaultDamage: 20
   assaultTimeBetweenShooting: 0.1
   assaultSpread: 0.05
+  assaultAimSpread: 0.001
+  assaultMovingSpread: 0.1
   assaultRange: 80
   assaultReloadTime: 3
   assaultTimeBetweenShots: 0
@@ -57,7 +59,9 @@ MonoBehaviour:
   assaultAllowButtonHold: 1
   sniperDamage: 120
   sniperTimeBetweenShooting: 1.5
-  sniperSpread: 0
+  sniperSpread: 2
+  sniperAimSpread: 0
+  sniperMovingSpread: 2
   sniperRange: 150
   sniperReloadTime: 3
   sniperTimeBetweenShots: 1.5
@@ -65,6 +69,8 @@ MonoBehaviour:
   pistolDamage: 15
   pistolTimeBetweenShooting: 0
   pistolSpread: 0.01
+  pistolAimSpread: 0.0001
+  pistolMovingSpread: 0.1
   pistolRange: 60
   pistolReloadTime: 3
   pistolTimeBetweenShots: 0
@@ -72,6 +78,8 @@ MonoBehaviour:
   shotgunDamage: 30
   shotgunTimeBetweenShooting: 1
   shotgunSpread: 0.1
+  shotgunAimSpread: 0.0001
+  shotgunMovingSpread: 0.05
   shotgunRange: 20
   shotgunReloadTime: 3
   shotgunTimeBetweenShots: 0
@@ -92,7 +100,7 @@ MonoBehaviour:
   camShake: {fileID: 1866764438481221349}
   camShakeMagnitude: 1
   camShakeDuration: 1
-  text: {fileID: 0}
+  ammunition: {fileID: 0}
 --- !u!82 &2592671047488945691
 AudioSource:
   m_ObjectHideFlags: 0
@@ -604,9 +612,9 @@ MonoBehaviour:
   speedIncreaseMultiplier: 1.5
   slopeIncreaseMultiplier: 2.5
   groundDrag: 4
-  jumpForce: 0
+  jumpForce: 8
   jumpCooldown: 0.25
-  airMultiplier: 0
+  airMultiplier: 1
   crouchSpeed: 3.5
   crouchYScale: 0.5
   jumpKey: 32
@@ -615,12 +623,14 @@ MonoBehaviour:
   playerHeight: 2
   whatIsGround:
     serializedVersion: 2
-    m_Bits: 24
+    m_Bits: 280
   grounded: 0
   maxSlopeAngle: 40
   climbingScript: {fileID: 7069829065147848286}
   health: 120
   orientation: {fileID: 2836542782350600473}
+  playerObj: {fileID: 4222820398242685676}
+  gunController: {fileID: 1281247006006258366}
   state: 0
   sliding: 0
   crouching: 0
@@ -647,7 +657,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orientation: {fileID: 2836542782350600473}
   playerObj: {fileID: 4222820398242685676}
-  maxSlideTime: 2
+  maxSlideTime: 1
   slideForce: 200
   slideYScale: 0.5
   slideKey: 306
