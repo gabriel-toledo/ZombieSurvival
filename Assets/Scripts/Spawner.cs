@@ -15,11 +15,6 @@ public class SimpleSpawner : MonoBehaviour
     float timeBetween;
     void Update()
     {
-        if (gameController.enemiesKilled % 10 == 0)
-        {
-            maxStartTime -= 0.1f * gameController.enemiesKilled / 10;
-            maxAmount += 20 * gameController.enemiesKilled / 10;
-        }
         if (timeBetween <= 0 && spawnedAmount < maxAmount + gameController.enemiesKilled)
         {
             int randomObject = Random.Range(0, ObjectToSpawn.Length);
