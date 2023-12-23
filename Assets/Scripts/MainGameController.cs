@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainGameController : MonoBehaviour
 {
     public int enemiesKilled = 0;
-    public TextMeshProUGUI killCount;
+    public Text killCount;
 
     public void CountEnemy(int amount)
     {
@@ -17,7 +17,7 @@ public class MainGameController : MonoBehaviour
     void Update()
     {
         if(killCount != null)
-            killCount.SetText("Enemies killed: " + enemiesKilled);
+            killCount.text = "Enemies killed: " + enemiesKilled;
     }
 
     public void StartGame()

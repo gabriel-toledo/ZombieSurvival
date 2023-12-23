@@ -31,12 +31,4 @@ public class PlayerStats : CharacterStats
         base.Die();
         ui.SetActiveHud(false);
     }
-
-    private void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.T))
-        {
-            TakeDamage(10);
-        }
-    }
 }

@@ -1,15 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject hudCanvas = null;
     [SerializeField] private GameObject endCanvas = null;
     [SerializeField] private GameObject PauseCanvas = null;
-    
-    private bool isPaused = false;
+    [SerializeField] private Text score;
+    [SerializeField] private MainGameController gameController;
+
+    public bool isPaused = false;
     private CameraController camController = null;
     private PlayerStats stats = null;
 
@@ -21,21 +22,26 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+
         if(!stats.IsDead())
         {
-            if(Input.GetKeyDown(KeyCode.P) && !isPaused)
+            if((Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape)) && !isPaused)
                 SetActivePause(true);
-            else if(Input.GetKeyDown(KeyCode.P) && isPaused)
+            else if((Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape)) && isPaused)
                 SetActivePause(false);
         }
-        
     }
-
 
     public void SetActiveHud(bool state)
     {
         hudCanvas.SetActive(state);
         endCanvas.SetActive(!state);
+        if(!state)
+        {
+            hudCanvas.SetActive(true);
+            camController.UnlockCursor();
+            Time.timeScale = 1;
+        }
 
         if(!stats.IsDead())
             PauseCanvas.SetActive(!state);
@@ -71,6 +77,11 @@ public class UIManager : MonoBehaviour
 
     public void ReturnMenu()
     {
+        if (isPaused) 
+        { 
+            isPaused = false;
+            Time.timeScale = 1;
+        }
         SceneManager.LoadScene("MainMenu");
     }
 

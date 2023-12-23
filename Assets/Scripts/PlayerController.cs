@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -52,12 +50,10 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     public Climbing climbingScript;
 
-    [Header("Stats")]
-    public float health;
-
     public Transform orientation;
     public Transform playerObj;
     public GunController gunController;
+    private PlayerStats stats;
 
     float horizontalInput;
     float verticalInput;
@@ -92,13 +88,10 @@ public class PlayerController : MonoBehaviour
 
     public bool restricted;
 
-    public TextMeshProUGUI text_heath;
-    public TextMeshProUGUI text_speed;
-    public TextMeshProUGUI text_mode;
-
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        stats = GetComponent<PlayerStats>();
         rb.freezeRotation = true;
 
         readyToJump = true;
@@ -114,15 +107,12 @@ public class PlayerController : MonoBehaviour
         MyInput();
         SpeedControl();
         StateHandler();
-        TextStuff();
 
         // handle drag
         if (grounded)
             rb.drag = groundDrag;
         else
             rb.drag = 0;
-
-        text_heath.SetText("Health: " + health);
 
         if (transform.position.y < WaterHeight)
         {
@@ -135,7 +125,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        MovePlayer();
+        if(!stats.IsDead())
+            MovePlayer();
     }
 
     private void MyInput()
@@ -394,33 +385,8 @@ public class PlayerController : MonoBehaviour
         return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
     }
 
-    private void TextStuff()
-    {
-        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-        if (OnSlope())
-            text_speed.SetText("Speed: " + Round(rb.velocity.magnitude, 1) + " / " + Round(moveSpeed, 1));
-
-        else
-            text_speed.SetText("Speed: " + Round(flatVel.magnitude, 1) + " / " + Round(moveSpeed, 1));
-
-        text_mode.SetText(state.ToString());
-    }
-
-    public static float Round(float value, int digits)
-    {
-        float mult = Mathf.Pow(10.0f, (float)digits);
-        return Mathf.Round(value * mult) / mult;
-    }
-
     public void TakeDamage(int damage)
     {
-        health -= damage;
-
-        if (health <= 0) Invoke(nameof(DestroyPlayer), 0.5f);
-    }
-    private void DestroyPlayer()
-    {
-        Destroy(gameObject);
+        stats.TakeDamage(damage);
     }
 }

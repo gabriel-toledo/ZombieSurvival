@@ -1,0 +1,36 @@
+[
+  {
+    "MountId": "56e62dd7-241f-41e9-8c6b-dd4ca4513e62",
+    "AncestorCsetIds": [
+      12
+    ],
+    "SourceCsetId": 14,
+    "DestinationCsetId": 12,
+    "FileConflicts": [
+      {
+        "Path": "/Assets/Prefabs/Enemy.prefab",
+        "ItemId": 302,
+        "ParentItemId": 284,
+        "BaseRevId": 15269,
+        "SourceRevId": 15506,
+        "DestinationRevId": 15269
+      },
+      {
+        "Path": "/Assets/Scripts/EnemyAi.cs",
+        "ItemId": 313,
+        "ParentItemId": 288,
+        "BaseRevId": 15287,
+        "SourceRevId": 15508,
+        "DestinationRevId": 15287
+      },
+      {
+        "Path": "/Assets/Scripts/GunController.cs",
+        "ItemId": 309,
+        "ParentItemId": 288,
+        "BaseRevId": 15288,
+        "SourceRevId": 15509,
+        "DestinationRevId": 15288
+      }
+    ]
+  }
+]

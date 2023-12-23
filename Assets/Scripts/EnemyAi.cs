@@ -10,6 +10,7 @@ public class EnemyAi : MonoBehaviour
     public Transform player;
 
     public LayerMask whatIsGround, whatIsPlayer;
+    private Animator anim;
 
     public MainGameController gameController;
 
@@ -27,13 +28,14 @@ public class EnemyAi : MonoBehaviour
 
     //States
     public float sightRange, attackRange;
-    public bool playerInSightRange, playerSighted, playerInAttackRange;
+    public bool playerInSightRange, playerSighted, playerInAttackRange, dead = false;
 
     private void Awake()
     {
         gameController = GameObject.Find("MainGameController").GetComponent<MainGameController>();
         player = GameObject.Find("PlayerObj").transform;
         agent = GetComponent<NavMeshAgent>();
+        anim = GetComponent<Animator>();
     }
 
     private void Update()
@@ -42,9 +44,9 @@ public class EnemyAi : MonoBehaviour
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
-        if (!playerInSightRange && !playerSighted && !playerInAttackRange) Patroling();
-        if ((playerInSightRange || playerSighted) && !playerInAttackRange) ChasePlayer();
-        if (playerInAttackRange) AttackPlayer(player.GetComponent<PlayerController>());
+        if (!playerInSightRange && !playerSighted && !playerInAttackRange && !dead) Patroling();
+        if ((playerInSightRange || playerSighted) && !playerInAttackRange && !dead) ChasePlayer();
+        if (playerInAttackRange && !dead) AttackPlayer(player.GetComponentInParent<PlayerController>());
     }
 
     private void Patroling()
@@ -52,6 +54,7 @@ public class EnemyAi : MonoBehaviour
         if (!walkPointSet) SearchWalkPoint();
         else agent.SetDestination(walkPoint);
 
+        anim.SetFloat("Speed", 0.6f, 0.3f, Time.deltaTime);
         Vector3 distanceToWalkPoint = transform.position - walkPoint;
 
         //Walkpoint reached
@@ -72,19 +75,20 @@ public class EnemyAi : MonoBehaviour
 
     private void ChasePlayer()
     {
+        anim.SetFloat("Speed", 0.6f, 0.3f, Time.deltaTime);
         playerSighted = true;
         agent.SetDestination(player.position);
     }
 
     private void AttackPlayer(PlayerController playerController)
     {
-        transform.LookAt(player);
-
+        anim.SetFloat("Speed", 1f, 0.3f, Time.deltaTime);
+        transform.LookAt(player.position);
+        agent.SetDestination(transform.position);
         if (!alreadyAttacked)
         {
             playerController.TakeDamage(attackDamage);
             alreadyAttacked = true;
-            agent.SetDestination(transform.position);
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
         }
     }
@@ -99,11 +103,14 @@ public class EnemyAi : MonoBehaviour
         playerSighted = true;
         health -= damage;
 
-        if (health <= 0) { 
+        if (health <= 0)
+        {
+            dead = true;
+            anim.SetFloat("Speed", 1.5f, 0.001f, Time.deltaTime);
             playerSighted = false;
             playerInSightRange = false;
             agent.SetDestination(transform.position);
-            Invoke(nameof(DestroyEnemy), 0.5f); 
+            Invoke(nameof(DestroyEnemy), 1.12f);
         }
         else ChasePlayer();
     }
@@ -112,12 +119,4 @@ public class EnemyAi : MonoBehaviour
         gameController.CountEnemy(1);
         Destroy(gameObject);
     }
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Player"))
-    //    {
-    //        AttackPlayer(other.GetComponentInParent<PlayerController>());
-    //    }
-    //}
 }

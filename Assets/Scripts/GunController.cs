@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using TMPro;
-using Unity.VisualScripting;
+using UnityEngine.UI;
 
 public class GunController : MonoBehaviour
 {
@@ -40,12 +39,17 @@ public class GunController : MonoBehaviour
     public GameObject sniperPrefab;
     public GameObject pistolPrefab;
     public GameObject shotgunPrefab;
+    public PlayerStats playerStats;
+    public UIManager uiManager;
 
     [Header("Graphics")]
     public GameObject enviromentBulletHoleGraphic, enemyBulletHoleGraphic;
     public CameraShake camShake;
     public float camShakeMagnitude, camShakeDuration;
-    public TextMeshProUGUI ammunition;
+    public Text ammunition;
+    public Image dot;
+    public Image sniperAim;
+    public GameObject Crosshair;
 
     private Gun assaultRifle;
     private Gun sniper;
@@ -116,21 +120,24 @@ public class GunController : MonoBehaviour
         MyInput();
 
         //Set Ammunition
-        ammunition.SetText(currentGun.bulletsLeft / currentGun.bulletsPerTap + " / " + currentGun.magazineSize / currentGun.bulletsPerTap);
+        ammunition.text = currentGun.bulletsLeft / currentGun.bulletsPerTap + " / " + currentGun.magazineSize / currentGun.bulletsPerTap;
     }
 
     private void MyInput()
     {
         if (currentGun.allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
         else shooting = Input.GetKeyDown(KeyCode.Mouse0);
-
-        if ((Input.GetKeyDown(KeyCode.R) && currentGun.bulletsLeft < currentGun.magazineSize && !reloading) || (currentGun.bulletsLeft <=0 && shooting & !reloading)) Reload();
-
-        //Shoot
-        if (currentGun.readyToShoot && shooting && !reloading && currentGun.bulletsLeft > 0)
+        if (!playerStats.IsDead() && !uiManager.isPaused)
         {
-            currentGun.bulletsShot = currentGun.bulletsPerTap;
-            Shoot();
+
+            if ((Input.GetKeyDown(KeyCode.R) && currentGun.bulletsLeft < currentGun.magazineSize && !reloading) || (currentGun.bulletsLeft <= 0 && shooting & !reloading)) Reload();
+
+            //Shoot
+            if (currentGun.readyToShoot && shooting && !reloading && currentGun.bulletsLeft > 0)
+            {
+                currentGun.bulletsShot = currentGun.bulletsPerTap;
+                Shoot();
+            }
         }
 
         //Switch Gun
@@ -141,6 +148,7 @@ public class GunController : MonoBehaviour
 
         //Aim
         if (Input.GetMouseButtonDown(1)) Aim();
+        if (Input.GetMouseButton(1) && !aiming) Aim();
         if (Input.GetMouseButtonUp(1)) StopAim();
     }
 
@@ -169,15 +177,40 @@ public class GunController : MonoBehaviour
 
     private void Aim()
     {
-        aiming = true;
-        transform.GetComponentInChildren<Animator>().Play("Aim");
+        if (!reloading)
+        {
+            aiming = true;
+            transform.GetComponentInChildren<Animator>().Play("Aim");
+            Crosshair.SetActive(false);
+            if (currentGun.type == GunTypes.sniper)
+                Invoke("Zoom", 0.48f);
+            else
+            {
+                Invoke("Zoom", 0.1f);
+                dot.gameObject.SetActive(true);
+            }
+        }
+    }
 
+    private void Zoom()
+    {
+        if (aiming)
+        {
+            fpsCam.fieldOfView = 30;
+            if(currentGun.type == GunTypes.sniper)
+                sniperAim.gameObject.SetActive(true);
+        }
     }
 
     private void StopAim()
     {
         aiming = false;
+        currentGun.gun.GetComponent<Renderer>().enabled = true;
         transform.GetComponentInChildren<Animator>().Play("New State");
+        fpsCam.fieldOfView = 60;
+        dot.gameObject.SetActive(false);
+        sniperAim.gameObject.SetActive(false);
+        Crosshair.SetActive(true);
     }
     
     private void Shoot()
@@ -185,9 +218,7 @@ public class GunController : MonoBehaviour
         currentGun.readyToShoot = false;
 
         //Spread
-        float x = 0; 
-        float y = 0;
-        float spreadMoving = 0;
+        float x = 0, y = 0, spreadMoving = 0;
         if (moving) spreadMoving = currentGun.movingSpread;
         if (aiming)
         {
@@ -195,8 +226,8 @@ public class GunController : MonoBehaviour
             y = Random.Range(-currentGun.aimSpread - spreadMoving, currentGun.aimSpread + spreadMoving);
         } else
         {
-            x = Random.Range(-currentGun.spread, currentGun.spread);
-            y = Random.Range(-currentGun.spread, currentGun.spread);
+            x = Random.Range(-currentGun.spread - spreadMoving, currentGun.spread + spreadMoving);
+            y = Random.Range(-currentGun.spread - spreadMoving, currentGun.spread + spreadMoving);
         }
 
         //Calculate Direction with Spread
@@ -210,7 +241,17 @@ public class GunController : MonoBehaviour
             if (rayHit.collider.CompareTag("Enemy"))
             {
                 Instantiate(enemyBulletHoleGraphic, rayHit.point, Quaternion.Euler(0, 180, 0));
-                rayHit.collider.GetComponent<EnemyAi>().TakeDamage(currentGun.damage);
+                Debug.Log(rayHit.point);
+                EnemyAi enemyController;
+                List<string> lowerParts = new List<string>() { "Z_Hip", "Z_L_LegCalf", "Z_L_LegThigh", "Z_R_LegCalf", "Z_R_LegThigh"};
+                if (!rayHit.collider.TryGetComponent<EnemyAi>(out enemyController))
+                    enemyController = rayHit.collider.GetComponentInParent<EnemyAi>();
+                if (rayHit.collider.name == "Z_Head")
+                    enemyController.TakeDamage(2 * currentGun.damage);
+                else if (lowerParts.Any(s => s.Contains(rayHit.collider.name)))
+                    enemyController.TakeDamage((int)(currentGun.damage * 0.8));
+                else
+                    enemyController.TakeDamage(currentGun.damage);
             }
             else
                 Instantiate(enviromentBulletHoleGraphic, rayHit.point, Quaternion.Euler(0, 180, 0));
@@ -238,6 +279,7 @@ public class GunController : MonoBehaviour
     }
     private void Reload()
     {
+        if(aiming) StopAim();
         reloading = true;
         reload.Play();
         Invoke("ReloadFinished", currentGun.reloadTime);
